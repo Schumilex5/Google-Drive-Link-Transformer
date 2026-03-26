@@ -16,7 +16,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 CREDENTIALS_FILE = os.environ.get('CREDENTIALS_FILE', 'credentials.json')
 TOKEN_FILE = os.environ.get('TOKEN_FILE', 'token.json')
 ROOT_FOLDER_ID = os.environ.get('ROOT_FOLDER_ID', '1-D7FP0TFHlDw5WScm6s71ReyqNX3eREH')
-LOCAL_ROOT = os.environ.get('LOCAL_ROOT', 'catimagesv2')
+LOCAL_ROOT = os.environ.get('LOCAL_ROOT', 'drive_links')
 # If the folder resides in a shared drive, set SUPPORTS_ALL_DRIVES=true in your .env
 SUPPORTS_ALL_DRIVES = os.environ.get('SUPPORTS_ALL_DRIVES', 'false').lower() in ('1', 'true', 'yes')
 

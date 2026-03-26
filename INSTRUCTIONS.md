@@ -19,7 +19,7 @@ Create a `.env` file in the project root with these values (example):
 
 ```
 ROOT_FOLDER_ID=1-D7FP0TFHlDw5WScm6s71ReyqNX3eREH
-LOCAL_ROOT=catimagesv2
+LOCAL_ROOT=drive_links
 CREDENTIALS_FILE=credentials.json
 TOKEN_FILE=token.json
 ```
