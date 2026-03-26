@@ -1,5 +1,7 @@
 # Google Drive Link Transformer
 
+I made this for personal use, I needed a free way to store images for my fan wiki project, google drive was an obvious long term solution but I had issues with displaying images using the default link format. 
+
 This small utility scans a Google Drive folder (recursively) and writes viewable links for each file into `links.txt` files placed in a local folder structure that mirrors the Drive folder tree.
 
 Prerequisites
