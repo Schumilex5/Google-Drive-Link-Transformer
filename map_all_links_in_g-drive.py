@@ -41,20 +41,21 @@ def list_files(service, folder_id, parent_path):
     query = f"'{folder_id}' in parents and trashed=false"
     page_token = None
     while True:
-            try:
-                results = service.files().list(
-                    q=query,
-                    fields="nextPageToken, files(id, name, mimeType)",
-                    pageToken=page_token,
-                    includeItemsFromAllDrives=SUPPORTS_ALL_DRIVES,
-                    supportsAllDrives=SUPPORTS_ALL_DRIVES,
-                ).execute()
-            except HttpError as e:
-                # Provide clearer guidance on common causes
-                print(f"Drive API error when listing files for folder '{folder_id}': {e}")
-                print("- Check that the folder ID is correct and the authenticated user has access.")
-                print("- If the folder is on a shared drive, set SUPPORTS_ALL_DRIVES=true in your .env.")
-                raise
+        try:
+            results = service.files().list(
+                q=query,
+                fields="nextPageToken, files(id, name, mimeType)",
+                pageToken=page_token,
+                includeItemsFromAllDrives=SUPPORTS_ALL_DRIVES,
+                supportsAllDrives=SUPPORTS_ALL_DRIVES,
+            ).execute()
+        except HttpError as e:
+            # Provide clearer guidance on common causes
+            print(f"Drive API error when listing files for folder '{folder_id}': {e}")
+            print("- Check that the folder ID is correct and the authenticated user has access.")
+            print("- If the folder is on a shared drive, set SUPPORTS_ALL_DRIVES=true in your .env.")
+            return
+
         items = results.get('files', [])
         for item in items:
             if item['mimeType'] == 'application/vnd.google-apps.folder':
@@ -63,6 +64,7 @@ def list_files(service, folder_id, parent_path):
                 yield from list_files(service, item['id'], new_folder)
             else:
                 yield item['name'], item['id'], parent_path
+
         page_token = results.get('nextPageToken', None)
         if page_token is None:
             break
