@@ -10,5 +10,8 @@ __pycache__/
 # OAuth token
 token.json
 
+# Google API credentials
+credentials.json
+
 # VS Code settings
 .vscode/
