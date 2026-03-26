@@ -4,6 +4,7 @@ from tqdm import tqdm
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from google.auth.transport.requests import Request
 from dotenv import load_dotenv
 
@@ -12,10 +13,12 @@ load_dotenv()
 
 # Define the scope and configurable settings (can be set in a .env file)
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-ROOT_FOLDER_ID = os.environ.get('ROOT_FOLDER_ID', '1-D7FP0TFHlDw5WScm6s71ReyqNX3eREH')
 CREDENTIALS_FILE = os.environ.get('CREDENTIALS_FILE', 'credentials.json')
 TOKEN_FILE = os.environ.get('TOKEN_FILE', 'token.json')
+ROOT_FOLDER_ID = os.environ.get('ROOT_FOLDER_ID', '1-D7FP0TFHlDw5WScm6s71ReyqNX3eREH')
 LOCAL_ROOT = os.environ.get('LOCAL_ROOT', 'catimagesv2')
+# If the folder resides in a shared drive, set SUPPORTS_ALL_DRIVES=true in your .env
+SUPPORTS_ALL_DRIVES = os.environ.get('SUPPORTS_ALL_DRIVES', 'false').lower() in ('1', 'true', 'yes')
 
 def authenticate():
     """Authenticate and return the Google Drive service."""
@@ -38,11 +41,20 @@ def list_files(service, folder_id, parent_path):
     query = f"'{folder_id}' in parents and trashed=false"
     page_token = None
     while True:
-        results = service.files().list(
-            q=query,
-            fields="nextPageToken, files(id, name, mimeType)",
-            pageToken=page_token
-        ).execute()
+            try:
+                results = service.files().list(
+                    q=query,
+                    fields="nextPageToken, files(id, name, mimeType)",
+                    pageToken=page_token,
+                    includeItemsFromAllDrives=SUPPORTS_ALL_DRIVES,
+                    supportsAllDrives=SUPPORTS_ALL_DRIVES,
+                ).execute()
+            except HttpError as e:
+                # Provide clearer guidance on common causes
+                print(f"Drive API error when listing files for folder '{folder_id}': {e}")
+                print("- Check that the folder ID is correct and the authenticated user has access.")
+                print("- If the folder is on a shared drive, set SUPPORTS_ALL_DRIVES=true in your .env.")
+                raise
         items = results.get('files', [])
         for item in items:
             if item['mimeType'] == 'application/vnd.google-apps.folder':
