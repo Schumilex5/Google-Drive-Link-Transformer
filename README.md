@@ -4,6 +4,9 @@ I made this for personal use, I needed a free way to store images for my fan wik
 
 This small utility scans a Google Drive folder (recursively) and writes viewable links for each file into `links.txt` files placed in a local folder structure that mirrors the Drive folder tree.
 
+# Known Bugs
+- If it crashes with keyboard interrup on first launch, just run it again
+
 Prerequisites
 - Python 3.8+
 - A Google Cloud project with the Drive API enabled and an OAuth 2.0 Client ID (desktop)
