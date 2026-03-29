@@ -7,6 +7,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.auth.transport.requests import Request
 from dotenv import load_dotenv
+import requests
+from requests.exceptions import RequestException
 
 # Load environment variables from .env (if present)
 load_dotenv()
@@ -25,9 +27,34 @@ def authenticate():
     creds = None
     if os.path.exists(TOKEN_FILE):
         creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+    
+    # Create a requests.Session subclass that enforces a default timeout
+    class TimeoutSession(requests.Session):
+        def __init__(self, timeout=10, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._timeout = timeout
+
+        def request(self, method, url, **kwargs):
+            if 'timeout' not in kwargs:
+                kwargs['timeout'] = self._timeout
+            return super().request(method, url, **kwargs)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+            try:
+                # Use a session with a default timeout to avoid hanging indefinitely
+                request_obj = Request(session=TimeoutSession())
+                creds.refresh(request_obj)
+            except RequestException as e:
+                print(f"Network error while refreshing credentials: {e}")
+                print("Check your internet connection, proxy settings, or firewall.")
+                print(f"You can try deleting '{TOKEN_FILE}' to force a new auth flow.")
+                raise
+            except Exception as e:
+                print(f"Failed to refresh credentials: {e}")
+                print(f"Falling back to interactive authentication using '{CREDENTIALS_FILE}'.")
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    CREDENTIALS_FILE, SCOPES)
+                creds = flow.run_local_server(port=0)
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
                 CREDENTIALS_FILE, SCOPES)
